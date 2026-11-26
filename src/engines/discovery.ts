@@ -71,10 +71,20 @@ export async function discoverForProduct(monitoredId: string, options: { maxStor
     } catch (error) {
       sourcesFailed += 1;
       const message = error instanceof Error ? error.message : "erro desconhecido";
+      const blocked = /bloquead|captcha|403|429|robots/i.test(message);
       await repository.insertResult({
-        run_id: run.id, store_id: adapter.storeId, status: /bloquead|captcha|403|429|robots/i.test(message) ? "blocked" : "error",
+        run_id: run.id, store_id: adapter.storeId, status: blocked ? "blocked" : "error",
         offers_found: 0, message: message.slice(0, 300), duration_ms: Date.now() - started, created_at: now(),
       });
+      if (/429|rate|too many|limite/i.test(message)) {
+        await createNotification({
+          userId: monitored.user_id,
+          type: "store_error",
+          title: "Limite de requisicoes atingido",
+          body: `${adapter.storeId}: ${message.slice(0, 200)}`,
+          offerId: null,
+        });
+      }
     }
   }
 

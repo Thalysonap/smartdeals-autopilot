@@ -1,6 +1,7 @@
 import { createHash, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
+import nodemailer from "nodemailer";
 import { repository } from "./repository";
 import type { User } from "./types";
 
@@ -104,6 +105,25 @@ export async function requestPasswordReset(email: string): Promise<{ ok: boolean
   if (!user) return { ok: true };
   const token = randomBytes(24).toString("base64url");
   await repository.createPasswordReset(user.id, hashToken(token), new Date(Date.now() + 1800_000).toISOString());
+  if (process.env.SMTP_HOST) {
+    try {
+      const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/reset-password?token=${encodeURIComponent(token)}`;
+      const transport = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: Number(process.env.SMTP_PORT ?? 587),
+        secure: Number(process.env.SMTP_PORT ?? 465) === 465,
+        auth: process.env.SMTP_USER ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS ?? "" } : undefined,
+      });
+      await transport.sendMail({
+        from: process.env.SMTP_FROM ?? "SmartDeals <no-reply@smartdeals.local>",
+        to: email,
+        subject: "Redefinicao de senha - SmartDeals",
+        text: `Para redefinir sua senha, acesse: ${resetUrl}`,
+        html: `<p>Para redefinir sua senha, acesse: <a href="${resetUrl}">${resetUrl}</a></p>`,
+      });
+    } catch { /* falha no envio mantem o modo dev */ }
+    return { ok: true };
+  }
   return { ok: true, token, devToken: true };
 }
 

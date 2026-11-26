@@ -7,6 +7,9 @@ data/
 .env.*.local
 *.log
 coverage/
+playwright-report/
+test-results/
+
 .DS_Store
 tsconfig.tsbuildinfo
 next-env.d.ts

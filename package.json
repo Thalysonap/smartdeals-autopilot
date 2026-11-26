@@ -10,20 +10,26 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
     "worker": "tsx src/worker/index.ts",
     "db:local": "tsx scripts/local-db.ts"
   },
   "dependencies": {
+    "@sentry/nextjs": "^11.18.0",
     "@supabase/supabase-js": "^2.119.2",
     "cheerio": "^1.2.0",
     "lucide-react": "^0.468.0",
     "next": "15.5.29",
+    "nodemailer": "^10.6.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "recharts": "^3.11.1",
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.1",
+    "@sentry/nextjs": "^11.18.0",
     "@tailwindcss/postcss": "^4.1.0",
     "@types/node": "^22.10.0",
     "@types/react": "^19.1.0",
